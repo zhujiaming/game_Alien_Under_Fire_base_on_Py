@@ -5,6 +5,7 @@ from ship import Ship
 import game_functions as gf
 from pygame.sprite import Group
 from alien import Alien
+from game_stats import GameStats
 
 
 def run_game():
@@ -18,6 +19,8 @@ def run_game():
     # 创建一个用于存储外星人的编组
     aliens = Group()
 
+    stats = GameStats(ai_settings)
+
     # #  创建一个外星人
     # alien = Alien(ai_settings, screen)
 
@@ -27,10 +30,10 @@ def run_game():
     # 开始游戏主循环
     while True:
         # 监视键盘和鼠标事件
-        gf.check_event(ai_settings, screen, ship, bullets)
+        gf.check_event(ai_settings, screen, ship, bullets, aliens)
         ship.update()
         gf.update_bullets(bullets, aliens, ai_settings, screen, ship)
-        gf.update_aliens(ai_settings, aliens)
+        gf.update_aliens(ai_settings, screen, ship, aliens, bullets, stats)
         gf.update_screen(ai_settings, screen, ship, bullets, aliens)
 
 

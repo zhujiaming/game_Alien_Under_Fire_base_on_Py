@@ -11,7 +11,7 @@ class Ship():
         self.isMovingLeft = False
 
         # 加载飞船并获取其外接矩形
-        self.image = pygame.image.load('image/ship1.png')
+        self.image = pygame.image.load('image/ship2.png')
         self.rect = self.image.get_rect()
         self.screen_rect = screen.get_rect()
 
@@ -36,3 +36,7 @@ class Ship():
 
         #  根据 self.center 更新 rect 对象
         self.rect.centerx = self.center
+
+    def center_ship(self):
+        """ 让飞船在屏幕上居中 """
+        self.center = self.screen_rect.centerx

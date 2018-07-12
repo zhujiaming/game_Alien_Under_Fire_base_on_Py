@@ -2,9 +2,10 @@ import sys
 import pygame
 from bullet import Bullet
 from alien import Alien
+from time import sleep
 
 
-def check_keydown_events(event, ai_settings, screen, ship, bullets):
+def check_keydown_events(event, ai_settings, screen, ship, bullets, aliens):
     """ 响应按键 """
     if event.key == pygame.K_RIGHT:
         ship.moving_right = True
@@ -15,6 +16,18 @@ def check_keydown_events(event, ai_settings, screen, ship, bullets):
     elif event.key == pygame.K_SPACE:
         # 创建一颗子弹，并将其加入到编组 bullets 中
         fire_bullet(ai_settings, screen, ship, bullets)
+    elif event.key == pygame.K_0:
+        # 打印当前状态
+        num_alines = len(aliens)
+        print("当前外星人数量：" + str(num_alines))
+    elif event.key == pygame.K_PAGEUP:
+        # +
+        ai_settings.add_alien_speed(0.05)
+        print("修改外星人入侵速度：" + str(ai_settings.alien_speed_factor))
+    elif event.key == pygame.K_PAGEDOWN:
+        # -
+        ai_settings.add_alien_speed(-0.05)
+        print("修改外星人入侵速度：" + str(ai_settings.alien_speed_factor))
 
 
 def check_keyup_events(event, ship):
@@ -25,13 +38,13 @@ def check_keyup_events(event, ship):
         ship.moving_left = False
 
 
-def check_event(ai_settings, screen, ship, bullets):
+def check_event(ai_settings, screen, ship, bullets, aliens):
     """ 响应按键和鼠标事件 """
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
         elif event.type == pygame.KEYDOWN:
-            check_keydown_events(event, ai_settings, screen, ship, bullets)
+            check_keydown_events(event, ai_settings, screen, ship, bullets, aliens)
         elif event.type == pygame.KEYUP:
             check_keyup_events(event, ship)
 
@@ -67,8 +80,7 @@ def check_bullet_alien_collisions(ai_settings, screen, ship, aliens, bullets):
     collisions = pygame.sprite.groupcollide(bullets, aliens, True, True)
     if len(aliens) == 0:
         #  删除现有的所有子弹，并创建一个新的外星人群
-        bullets.empty()
-        create_fleet(ai_settings, screen, ship, aliens)
+        re_update_aliens(ai_settings, screen, ship, aliens)
 
 
 def fire_bullet(ai_settings, screen, ship, bullets):
@@ -117,25 +129,53 @@ def get_number_rows(ai_settings, ship_height, alien_height):
     return number_rows
 
 
-def update_aliens(ai_settings, aliens):
+def update_aliens(ai_settings, screen, ship, aliens, bullets, stats):
     """ 更新外星人群中所有外星人的位置 """
     """
     检查是否有外星人位于屏幕边缘，并更新整群外星人的位置
     """
-    check_fleet_edges(ai_settings, aliens)
+    check_fleet_edges(ai_settings, screen, ship, aliens, bullets)
     aliens.update()
+    #  检测外星人和飞船之间的碰撞
+    if pygame.sprite.spritecollideany(ship, aliens):
+        print("Ship hit!!!")
+        ship_hit(ai_settings, stats, screen, ship, aliens, bullets)
 
 
-def check_fleet_edges(ai_settings, aliens):
+def check_fleet_edges(ai_settings, screen, ship, aliens, bullets):
     """ 有外星人到达边缘时采取相应的措施 """
     for alien in aliens.sprites():
         if alien.check_edges():
-            change_fleet_direction(ai_settings, aliens)
+            change_fleet_direction(ai_settings, screen, ship, aliens, bullets)
             break
 
 
-def change_fleet_direction(ai_settings, aliens):
+def change_fleet_direction(ai_settings, screen, ship, aliens, bullets):
     """ 将整群外星人下移，并改变它们的方向 """
     for alien in aliens.sprites():
         alien.rect.y += ai_settings.fleet_drop_speed
+    """ 判断是否全部移出屏幕，是则重新刷新 """
+    alien0 = aliens.sprites()[0]
+    if alien0.rect.y > ai_settings.screen_height:
+        re_update_aliens(ai_settings, screen, ship, aliens)
     ai_settings.fleet_direction *= -1
+
+
+def re_update_aliens(ai_settings, screen, ship, aliens):
+    #  删除现有的所有子弹，并创建一个新的外星人群
+    aliens.empty()
+    create_fleet(ai_settings, screen, ship, aliens)
+
+
+def ship_hit(ai_settings, stats, screen, ship, aliens, bullets):
+    """ 响应被外星人撞到的飞船 """
+    #  将 ships_left 减 1
+    stats.ships_left -= 1
+    #  清空外星人列表和子弹列表
+    aliens.empty()
+    bullets.empty()
+    #  创建一群新的外星人，并将飞船放到屏幕底端中央
+    create_fleet(ai_settings, screen, ship, aliens)
+    ship.center_ship()
+    #  暂停
+    sleep(0.5)

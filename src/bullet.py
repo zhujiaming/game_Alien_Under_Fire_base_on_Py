@@ -7,7 +7,7 @@ class Bullet(Sprite):
 
     def __init__(self, ai_settings, screen, ship):
         """ 在飞船所处的位置创建一个子弹对象 """
-        super(Bullet, self).__init__() #python2的语法
+        super(Bullet, self).__init__()  # python2的语法
 
         # super().__init__()
         self.screen = screen
