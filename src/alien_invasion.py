@@ -21,7 +21,7 @@ def run_game():
 
     stats = GameStats(ai_settings)
 
-    play_button = Button(ai_settings, screen, "Play")
+    play_button = Button(ai_settings, screen, "START")
     #  创建外星人群
     gf.create_fleet(ai_settings, screen, ship, aliens)
 
@@ -30,11 +30,11 @@ def run_game():
     # 开始游戏主循环
     while True:
         # 监视键盘和鼠标事件
-        gf.check_event(ai_settings, screen, ship, bullets, aliens, stats, play_button,sb)
+        gf.check_event(ai_settings, screen, ship, bullets, aliens, stats, play_button, sb)
         if stats.game_active:
             ship.update()
             gf.update_bullets(bullets, aliens, ai_settings, screen, ship, stats, sb)
-            gf.update_aliens(ai_settings, screen, ship, aliens, bullets, stats,sb)
+            gf.update_aliens(ai_settings, screen, ship, aliens, bullets, stats, sb)
         gf.update_screen(ai_settings, screen, ship, bullets, aliens, stats, play_button, sb)
 
 
